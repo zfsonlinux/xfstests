@@ -77,6 +77,9 @@ _mount_opts()
 	# acls aren't turned on by default on gfs2
 	export MOUNT_OPTIONS="-o acl $GFS2_MOUNT_OPTIONS"
 	;;
+    zfs)
+	export MOUNT_OPTIONS="$ZFS_MOUNT_OPTIONS"
+	;;
     *)
 	;;
     esac
@@ -307,6 +310,13 @@ _scratch_mkfs()
     udf)
         $MKFS_UDF_PROG $MKFS_OPTIONS $* $SCRATCH_DEV > /dev/null
 	;;
+    zfs)
+	# SCRATCH_DEV must be of the form 'pool/dataset'
+	/sbin/zfs list -H $SCRATCH_DEV > /dev/null 2>&1
+	if [ "$?" != "0" ]; then
+	    /sbin/zfs create -o mountpoint=legacy $SCRATCH_DEV
+	fi
+	;;
     *)
 	/sbin/mkfs -t $FSTYP -- $MKFS_OPTIONS $* $SCRATCH_DEV
 	;;
@@ -331,6 +341,14 @@ _scratch_mkfs_sized()
 	;;
     btrfs)
 	/sbin/mkfs.$FSTYP $MKFS_OPTIONS $SCRATCH_DEV -b $fssize
+	;;
+    zfs)
+	# No size required due to the nature of pooled storage
+	# SCRATCH_DEV must be of the form 'pool/dataset'
+	/sbin/zfs list -H $SCRATCH_DEV > /dev/null 2>&1
+	if [ "$?" != "0" ]; then
+	    /sbin/zfs create -o mountpoint=legacy $SCRATCH_DEV
+	fi
 	;;
     *)
 	_notrun "Filesystem $FSTYP not supported in _scratch_mkfs_sized"
@@ -704,6 +722,13 @@ _require_scratch()
 		     _notrun "this test requires a valid \$SCRATCH_DEV"
 		 fi
 		 ;;
+	zfs)
+		# SCRATCH_DEV must be of the form 'pool/dataset'
+		/sbin/zfs list -H $SCRATCH_DEV > /dev/null 2>&1
+		if [ "$?" != "0" ]; then
+		     _notrun "this test requires a valid \$SCRATCH_DEV"
+		fi
+		;;
 	*)
 		 if [ -z "$SCRATCH_DEV" -o "`_is_block_dev $SCRATCH_DEV`" = "" ]
 		 then
@@ -1278,6 +1303,9 @@ _check_test_fs()
 	;;
     udf)
 	# do nothing for now
+	;;
+    zfs)
+	# all zfs checking is done online
 	;;
     *)
 	_check_generic_filesystem $TEST_DEV

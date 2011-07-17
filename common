@@ -126,6 +126,7 @@ check options
     -xfs                test XFS (default)
     -udf                test UDF
     -nfs                test NFS
+    -zfs                test ZFS
     -l			line mode diff
     -xdiff		graphical mode diff
     -udiff		show unified diff (default)
@@ -155,6 +156,11 @@ testlist options
 
 	-nfs)	# -nfs ... set FSTYP to nfs
 	    FSTYP=nfs
+	    xpand=false
+	    ;;
+
+	-zfs)	# -zfs ... set FSTYP to zfs
+	    FSTYP=zfs
 	    xpand=false
 	    ;;
 
