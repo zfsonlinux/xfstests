@@ -45,13 +45,16 @@ _cleanup()
 _supported_fs generic
 _supported_os Linux
 
+AIO_TEST=$here/src/aio-dio-regress/aiodio_sparse2
+[ -x $AIO_TEST ] || _notrun "$AIO_TEST not built"
+
 echo "Silence is golden."
 
 # real QA test starts here
 rm -f $seq.full
 
 rm -f "$TEST_DIR/aiodio_sparse*"
-$here/src/aio-dio-regress/aiodio_sparse2 "$TEST_DIR/aiodio_sparse"
+$AIO_TEST "$TEST_DIR/aiodio_sparse"
 
 status=$?
 exit
