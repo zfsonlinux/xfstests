@@ -120,6 +120,7 @@ _check_ext4_eof_flag()
 # Prerequisites for the test run.
 _supported_fs ext4 xfs btrfs gfs2
 _supported_os Linux
+_require_fallocate
 _require_xfs_io_falloc
 
 # Real QA test starts here.

@@ -54,6 +54,7 @@ _supported_os Linux
 rm -f $seq.full
 
 # Sanity check to see if fallocate works
+_require_fallocate
 _require_xfs_io_falloc
 
 # Check if we have good enough space available

@@ -127,6 +127,8 @@ _process_args()
 _supported_fs generic
 _supported_os IRIX Linux
 
+_require_fallocate
+
 size10=`expr 10 \* 1024 \* 1024`	# 10 megabytes
 filelen=$size10
 numops1=1000

@@ -54,6 +54,7 @@ _supported_os Linux
 rm -f $seq.full
 rm -f $TEST_DIR/ouch*
 
+_require_fallocate
 _require_xfs_io_falloc
 
 # Ok, off we go.

@@ -982,6 +982,28 @@ _require_sparse_files()
     esac
 }
 
+#
+# Check if the filesystem supports fallocate.
+#
+_require_fallocate()
+{
+    if [ ! -x /bin/fallocate -a ! -x /usr/bin/fallocate -a ! -x /sbin/fallocate ]; then
+        _notrun "fallocate command not found"
+    fi
+
+    #
+    # Test if fallocate supports fallocate.
+    #
+    fallocate -l 65536 $TEST_DIR/syscalltest > $TEST_DIR/syscalltest.out 2>&1
+    cat $TEST_DIR/syscalltest.out >> $here/$seq.full
+
+    if grep -q 'Operation not supported' $TEST_DIR/syscalltest.out; then
+      _notrun "fallocate not supported by this filesystem type: $FSTYP"
+    fi
+
+    rm -f $TEST_DIR/syscalltest.out
+}
+
 # check that a FS on a device is mounted
 # if so, return mount point
 #
