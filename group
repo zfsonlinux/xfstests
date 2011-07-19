@@ -80,6 +80,9 @@ udf		ajones@sgi.com
 # AIO operations
 aio		nathans@sgi.com
 
+# DIO operations
+dio
+
 # Pattern writing and checking
 pattern         ajones@sgi.com
 
@@ -235,17 +238,17 @@ deprecated
 122 other auto quick
 123 perms auto quick
 124 pattern auto quick
-125 other auto
+125 other auto dio
 126 perms auto quick
 127 rw auto
 128 perms auto quick
 129 rw auto quick
-130 pattern auto quick
+130 pattern auto quick dio
 131 perms auto quick
 132 pattern auto
-133 rw auto
+133 rw auto dio
 134 quota auto quick
-135 metadata auto quick
+135 metadata auto quick dio
 136 attr2
 137 metadata log auto
 138 metadata log auto
@@ -320,10 +323,10 @@ deprecated
 204 metadata rw auto
 205 metadata rw auto
 206 growfs auto quick
-207 auto aio quick
-208 auto aio
-209 auto aio
-210 auto aio quick
+207 auto aio quick dio
+208 auto aio dio
+209 auto aio dio
+210 auto aio quick dio
 211 auto aio quick
 212 auto aio quick
 213 rw auto prealloc quick enospc
@@ -339,7 +342,7 @@ deprecated
 223 auto quick
 224 auto
 225 auto quick
-226 auto enospc
+226 auto enospc dio
 227 auto fsr
 228 rw auto prealloc quick
 229 auto rw
