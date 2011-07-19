@@ -58,6 +58,8 @@ _supported_os IRIX Linux
 
 _require_scratch
 
+[ -b $SCRATCH_DEV ] || _notrun "not a block device backed filesystem"
+
 echo "*** init fs"
 
 rm -f $seq.full
