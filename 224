@@ -52,6 +52,10 @@ trap "_cleanup ; exit \$status" 0 1 2 3 15
 _supported_fs generic
 _supported_os Linux
 
+if [ "$FSTYP" = "zfs" ]; then
+    _notrun "skipped for filesystem type: $FSTYP"
+fi
+
 _require_scratch
 
 # make a 1GB filesystem
