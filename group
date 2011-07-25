@@ -83,6 +83,9 @@ aio		nathans@sgi.com
 # DIO operations
 dio
 
+# Sendfile
+sendfile
+
 # Pattern writing and checking
 pattern         ajones@sgi.com
 
@@ -365,7 +368,7 @@ deprecated
 246 auto quick rw
 247 auto quick rw
 248 auto quick rw
-249 auto quick rw 
+249 auto quick rw sendfile
 250 auto quick rw prealloc metadata
 251 ioctl trim
 252 auto quick prealloc
