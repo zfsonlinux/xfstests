@@ -110,6 +110,9 @@ atime
 # Test preallocation calls
 prealloc
 
+# Tests which require the fsgqa user
+user
+
 # Old tests that we won't spend any effort trying to run and make work
 # on current systems
 deprecated
@@ -193,7 +196,7 @@ deprecated
 074 rw udf auto
 075 rw udf auto quick
 076 metadata rw udf auto quick
-077 acl attr auto enospc
+077 acl attr auto enospc user
 078 growfs auto quick
 079 acl attr ioctl metadata auto quick
 080 rw ioctl
@@ -239,12 +242,12 @@ deprecated
 120 other auto quick
 121 log auto quick
 122 other auto quick
-123 perms auto quick
+123 perms auto quick user
 124 pattern auto quick
-125 other auto dio
+125 other auto dio user
 126 perms auto quick
 127 rw auto
-128 perms auto quick
+128 perms auto quick user
 129 rw auto quick
 130 pattern auto quick dio
 131 perms auto quick
@@ -312,9 +315,9 @@ deprecated
 190 rw auto quick
 191 nfs4acl auto
 192 atime auto
-193 metadata auto quick
+193 metadata auto quick user
 194 rw auto
-195 ioctl dump auto quick
+195 ioctl dump auto quick user
 196 quota auto quick
 197 dir auto quick
 198 auto aio quick
@@ -349,12 +352,12 @@ deprecated
 227 auto fsr
 228 rw auto prealloc quick
 229 auto rw
-230 auto quota quick
-231 auto quota
+230 auto quota quick user
+231 auto quota user
 232 auto quota
-233 auto quota
+233 auto quota user
 234 auto quota
-235 auto quota quick
+235 auto quota quick user
 236 auto quick metadata
 237 auto quick acl
 238 auto quick metadata ioctl
@@ -375,4 +378,4 @@ deprecated
 253 auto quick
 254 auto quick
 255 auto quick prealloc
-256 auto quick
+256 auto quick user
