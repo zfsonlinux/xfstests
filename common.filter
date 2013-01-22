@@ -216,12 +216,12 @@ _filter_xfs_io_unique()
 
 _filter_test_dir()
 {
-	sed -e "s,$TEST_DEV,TEST_DEV,g" -e "s,$TEST_DIR,TEST_DIR,g"
+	sed -e "s,$TEST_DIR,TEST_DIR,g" -e "s,$TEST_DEV,TEST_DEV,g"
 }
 
 _filter_scratch()
 {
-	sed -e "s,$SCRATCH_DEV,SCRATCH_DEV,g" -e "s,$SCRATCH_MNT,SCRATCH_MNT,g"
+	sed -e "s,$SCRATCH_MNT,SCRATCH_MNT,g" -e "s,$SCRATCH_DEV,SCRATCH_DEV,g"
 }
 
 _filter_spaces()
