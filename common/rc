@@ -112,6 +112,9 @@ _mount_opts()
 	# acls aren't turned on by default on gfs2
 	export MOUNT_OPTIONS="-o acl $GFS2_MOUNT_OPTIONS"
 	;;
+    zfs)
+	export MOUNT_OPTIONS=$ZFS_MOUNT_OPTIONS
+	;;
     *)
 	;;
     esac
@@ -139,6 +142,9 @@ _mkfs_opts()
 	;;
     jfs)
 	export MKFS_OPTIONS="$JFS_MKFS_OPTIONS -q"
+	;;
+    zfs)
+	export MKFS_OPTIONS="$ZFS_MKFS_OPTIONS -f -O mountpoint=legacy -O acltype=posixacl"
 	;;
     *)
 	;;
@@ -189,6 +195,11 @@ case "$FSTYP" in
 	 ;;
     btrfs)
 	 [ "$MKFS_BTRFS_PROG" = "" ] && _fatal "mkfs.btrfs not found"
+	 ;;
+    zfs)
+	 [ "$MKFS_ZFS_PROG" = "" ] && _fatal "zpool not found"
+	 [ "$ZFS_UTIL_PROG" = "" ] && _fatal "zfs not found"
+	 [ "$ZFS_DEBUG_PROG" = "" ] && _fatal "zdb not found"
 	 ;;
     nfs)
 	 ;;
@@ -288,7 +299,7 @@ _scratch_mount()
 
 _scratch_unmount()
 {
-    $UMOUNT_PROG $SCRATCH_DEV
+    $UMOUNT_PROG $SCRATCH_MNT
 }
 
 _scratch_remount()
@@ -526,6 +537,19 @@ _scratch_mkfs_ext4()
 	return $mkfs_status
 }
 
+_scratch_mkfs_zfs()
+{
+	$MKFS_ZFS_PROG list -H zscratch  > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		$MKFS_ZFS_PROG destroy -f zscratch || return 1
+	fi
+
+	$MKFS_ZFS_PROG create $*
+	mkfs_status=$?
+
+	return $mkfs_status
+}
+
 _scratch_mkfs()
 {
     case $FSTYP in
@@ -543,6 +567,9 @@ _scratch_mkfs()
 	;;
     ext4)
 	_scratch_mkfs_ext4 $*
+	;;
+    zfs)
+	_scratch_mkfs_zfs $MKFS_OPTIONS $* zscratch $SCRATCH_DEV > /dev/null
 	;;
     *)
 	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $* $SCRATCH_DEV
@@ -600,6 +627,9 @@ _scratch_mkfs_sized()
 	;;
     btrfs)
 	$MKFS_BTRFS_PROG $MKFS_OPTIONS -b $fssize $SCRATCH_DEV
+	;;
+    zfs)
+	_scratch_mkfs_zfs $MKFS_OPTIONS -O quota=$fssize zscratch $SCRATCH_DEV
 	;;
     *)
 	_notrun "Filesystem $FSTYP not supported in _scratch_mkfs_sized"
@@ -803,6 +833,20 @@ _df_dir()
     # otherwise, nada
 }
 
+# returns the pool name from the zfs label on a given block device
+#
+_zfs_get_pool_by_dev()
+{
+    if [ $# -ne 1 ]
+    then
+	echo "Usage: _zfs_get_pool_by_dev dev" 1>&2
+	exit 1
+    fi
+
+    $ZFS_DEBUG_PROG -l $1 |
+        $AWK_PROG '/ name:/ { print $2; exit 0; }' | tr -d "'"
+}
+
 # return percentage used disk space for mounted device
 
 _used()
@@ -813,7 +857,16 @@ _used()
 	exit 1
     fi
 
-    _df_device $1 | $AWK_PROG '{ sub("%", "") ; print $6 }'
+    case $FSTYP in
+    zfs)
+	device=`_zfs_get_pool_by_dev $1`
+	;;
+    *)
+	device=$1
+	;;
+    esac
+
+    _df_device $device | $AWK_PROG '{ sub("%", "") ; print $6 }'
 }
 
 # return the FS type of a mounted device
@@ -826,13 +879,22 @@ _fs_type()
 	exit 1
     fi
 
+    case $FSTYP in
+    zfs)
+	device=`_zfs_get_pool_by_dev $1`
+	;;
+    *)
+	device=$1
+	;;
+    esac
+
     #
     # The Linux kernel shows NFSv4 filesystems in df output as
     # filesystem type nfs4, although we mounted it as nfs earlier.
     # Fix the filesystem type up here so that the callers don't
     # have to bother with this quirk.
     #
-    _df_device $1 | $AWK_PROG '{ print $2 }' | sed -e 's/nfs4/nfs/'
+    _df_device $device | $AWK_PROG '{ print $2 }' | sed -e 's/nfs4/nfs/'
 }
 
 # return the FS mount options of a mounted device
@@ -1341,7 +1403,14 @@ _is_mounted()
 	exit 1
     fi
 
-    device=$1
+    case $FSTYP in
+    zfs)
+	device=`_zfs_get_pool_by_dev $1`
+	;;
+    *)
+	device=$1
+	;;
+    esac
 
     if _mount | grep "$device " | $AWK_PROG -v pattern="type $FSTYP" '
         pattern        { print $3 ; exit 0 }
@@ -1690,6 +1759,39 @@ _check_btrfs_filesystem()
     return 0
 }
 
+_check_zfs_filesystem()
+{
+    device=$1
+    ok=1
+
+    label=`_zfs_get_pool_by_dev $device`
+    if [ -z "$label" ]; then
+	echo "_check_zfs_filesystem: no filesystem on $device"
+	status=1
+	exit 1
+    fi
+
+    $ZFS_DEBUG_PROG -cc $label >$tmp.fsck 2>&1
+    if [ $? -ne 0 ]; then
+	echo "_check_zfs_filesystem: filesystem on $device is inconsistent (see
+$seqres.full)"
+	echo "_check_zfs_filesystem: filesystem on $device is inconsistent" >>$seqres.full
+	echo "*** zdb -cc $pool output ***"	>>$seqres.full
+	cat $tmp.fsck				>>$seqres.full
+	echo "*** end zdb -cc $pool output"     >>$seqres.full
+
+	ok=0;
+    fi
+    rm -f $tmp.fsck
+
+    if [ $ok -eq 0 ]; then
+	status=1
+	exit 1
+    fi
+
+    return 0
+}
+
 _check_test_fs()
 {
     case $FSTYP in
@@ -1704,6 +1806,9 @@ _check_test_fs()
 	;;
     btrfs)
 	_check_btrfs_filesystem $TEST_DEV
+	;;
+    zfs)
+	_check_zfs_filesystem $TEST_DEV
 	;;
     *)
 	_check_generic_filesystem $TEST_DEV
@@ -1736,6 +1841,9 @@ _check_scratch_fs()
 	;;
     btrfs)
 	_check_btrfs_filesystem $device
+	;;
+    zfs)
+	_check_zfs_filesystem $device
 	;;
     *)
 	_check_generic_filesystem $device
@@ -1999,7 +2107,7 @@ _test_inode_extsz()
     echo $blocks
 }
 
-# scratch_dev_pool should contain the disks pool for the btrfs raid
+# scratch_dev_pool should contain the disks pool for the btrfs|zfs raid
 _require_scratch_dev_pool()
 {
 	local i
@@ -2007,12 +2115,12 @@ _require_scratch_dev_pool()
 		_notrun "this test requires a valid \$SCRATCH_DEV_POOL"
 	fi
 
-	# btrfs test case needs 2 or more scratch_dev_pool; other FS not sure
-	# so fail it
+	# btrfs|zfs test case needs 2 or more scratch_dev_pool;
+	# other FS not sure so fail it
 	case $FSTYP in
-	btrfs)
+	btrfs|zfs)
 		if [ "`echo $SCRATCH_DEV_POOL|wc -w`" -lt 2 ]; then
-			_notrun "btrfs and this test needs 2 or more disks in SCRATCH_DEV_POOL"
+			_notrun "btrfs|zfs and this test needs 2 or more disks in SCRATCH_DEV_POOL"
 		fi
 	;;
 	*)
@@ -2034,8 +2142,11 @@ _require_scratch_dev_pool()
 		        fi
 		fi
 		# to help better debug when something fails, we remove
-		# traces of previous btrfs FS on the dev.
-		dd if=/dev/zero of=$i bs=4096 count=100 > /dev/null 2>&1
+		# traces of previous btrfs|zfs FS on the dev.  zfs will
+		# create labels and the beginning and end of the device.
+		dd if=/dev/zero of=$i bs=512 count=1024 > /dev/null 2>&1
+		dd if=/dev/zero of=$i bs=512 \
+		    seek=$(( $(blockdev --getsz $i)-1024 )) > /dev/null 2>&1
 	done
 }
 
@@ -2064,6 +2175,18 @@ _require_btrfs()
 	fi
 	$BTRFS_UTIL_PROG $cmd --help >/dev/null 2>&1
 	[ $? -eq 0 ] || _notrun "$BTRFS_UTIL_PROG too old (must support $cmd)"
+}
+
+# We check for zfs and (optionally) features of the zfs command
+_require_zfs()
+{
+	cmd=$1
+	_require_command $ZFS_UTIL_PROG zfs
+	if [ -z "$1" ]; then
+		return 1;
+	fi
+	$ZFS_UTIL_PROG $cmd >/dev/null 2>&1
+	[ $? -eq 0 ] || _notrun "$ZFS_UTIL_PROG too old (must support $cmd)"
 }
 
 # Check that fio is present, and it is able to execute given jobfile

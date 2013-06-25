@@ -59,7 +59,8 @@ fi
 
 # Autodetect fs type based on what's on $TEST_DEV
 if [ "$HOSTOS" == "Linux" ]; then
-    FSTYP=`blkid -c /dev/null -s TYPE -o value $TEST_DEV`
+    FSTYP=`blkid -c /dev/null -s TYPE -o value $TEST_DEV | \
+	sed -E 's/(_member)+$//'`
 fi
 export FSTYP
 
@@ -73,6 +74,7 @@ usage()
 
 check options
     -nfs                test NFS
+    -zfs                test ZFS
     -l			line mode diff
     -udiff		show unified diff (default)
     -n			show me, do not run tests
@@ -207,6 +209,7 @@ while [ $# -gt 0 ]; do
 	-\? | -h | --help) usage ;;
 
 	-nfs)	FSTYP=nfs ;;
+	-zfs)	FSTYP=zfs ;;
 
 	-g)	group=$2 ; shift ;
 		GROUP_LIST="$GROUP_LIST $group"
