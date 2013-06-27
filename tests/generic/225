@@ -60,7 +60,7 @@ seed=`date +%s`
 echo "using seed $seed" >> $fiemaplog
 
 echo "fiemap run without preallocation, with sync"
-$here/src/fiemap-tester -q -S -s $seed -p 0 -r 200 $fiemapfile 2>&1 | tee -a $fiemaplog
+$here/src/fiemap-tester -q -S -s $seed -p 0 -r 200 $fiemapfile &>>$fiemaplog
 
 if [ $? -ne 0 ]; then
 	if grep -q "Operation not supported" $fiemaplog; then
@@ -71,7 +71,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "fiemap run without preallocation or sync"
-$here/src/fiemap-tester -q -s $seed -p 0 -r 200 $fiemapfile 2>&1 | tee -a $fiemaplog
+$here/src/fiemap-tester -q -s $seed -p 0 -r 200 $fiemapfile &>>$fiemaplog
 
 status=0
 exit
