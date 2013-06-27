@@ -47,6 +47,7 @@ _supported_os Linux IRIX
 
 _setup_testdir
 _require_scratch
+_require_dio
 _scratch_mkfs >/dev/null 2>&1
 
 _umount_mount()

@@ -56,6 +56,7 @@ _supported_os Linux IRIX
 
 _require_scratch
 _require_sparse_files
+_require_dio
 
 _setup_testdir
 
