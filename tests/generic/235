@@ -73,7 +73,7 @@ $XFS_IO_PROG -c 'pwrite 0 8k' -c 'fsync' \
 			$SCRATCH_MNT/testfile >>$seqres.full 2>&1
 repquota -u -g $SCRATCH_MNT  | grep -v "^root" | _filter_scratch
 
-umount $SCRATCH_DEV 2>/dev/null
+_scratch_unmount 2>/dev/null
 
 status=0
 exit

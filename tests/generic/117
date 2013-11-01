@@ -84,7 +84,7 @@ _require_scratch
 _require_attrs
 
 rm -f $seqres.full
-umount $SCRATCH_DEV >/dev/null 2>&1
+_scratch_unmount >/dev/null 2>&1
 echo "*** MKFS ***"                         >>$seqres.full
 echo ""                                     >>$seqres.full
 _scratch_mkfs                               >>$seqres.full 2>&1 \
@@ -107,7 +107,7 @@ while [ $i -lt $ITERATIONS ]; do
 done
 
 cd /
-umount $SCRATCH_MNT
+_scratch_unmount
 echo 
 echo Checking filesystem
 _check_scratch_fs
