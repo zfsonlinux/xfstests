@@ -197,6 +197,8 @@ _filter_dd()
     $AWK_PROG '
         /records in/                { next }
         /records out/               { next }
+        /Disk quota exceeded/       { print "   !!! disk full (expected)"
+                                      next }
         /No space left on device/   { print "   !!! disk full (expected)" 
                                       next }
                                     { print "   *** " $0 }

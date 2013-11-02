@@ -111,6 +111,9 @@ fi
 
 echo "check free space:"
 
+# ZFS updates free space after the txg is sync'ed, remount to force a sync.
+[ "$FSTYP" == "zfs" ] && _scratch_remount
+
 free2=`_free`
 if [ -z "$free2" ]
 then
