@@ -46,7 +46,7 @@ _cleanup()
 . ./common/filter
 
 FSX_FILE_SIZE=262144
-FSX_ARGS="-q -l $FSX_FILE_SIZE -o 65536 -S 191110531 -N 100000"
+FSX_ARGS="-q -l $FSX_FILE_SIZE -o 65536 -S 191110531 -N 1000"
 
 _fsx_lite_nommap()
 {

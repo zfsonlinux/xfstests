@@ -133,7 +133,7 @@ if [ $HOSTOS == "IRIX" ]; then
     fi
 elif [ $HOSTOS == "Linux" ]; then
     if uname -a | grep -q SMP; then
-        numloops=10
+        numloops=2
         numfiles=5
         numchildren=3
         param_type="Linux SMP"

@@ -127,8 +127,8 @@ _supported_os IRIX Linux
 
 size10=`expr 10 \* 1024 \* 1024`	# 10 megabytes
 filelen=$size10
-numops1=1000
-numops2=10000
+numops1=100
+numops2=1000
 
 # can override the params here
 _process_args "$@"
