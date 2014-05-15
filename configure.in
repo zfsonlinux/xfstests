@@ -23,12 +23,13 @@ AC_HEADER_STDC
 			sys/wait.h		\
 			sys/types.h		\
 			strings.h		\
-			err.h
-    ])
-    AC_CHECK_HEADERS([	sys/fs/xfs_fsops.h	\
+			err.h			\
+			sys/fs/xfs_fsops.h	\
 			sys/fs/xfs_itable.h	\
 			xfs/platform_defs.h	\
     ])
+
+AC_CHECK_HEADERS([xfs/xfs_log_format.h],,,[#include <xfs/libxfs.h>])
 
 AC_PACKAGE_NEED_UUIDCOMPARE
 
